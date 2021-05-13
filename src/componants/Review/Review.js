@@ -1,11 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import fakeData from '../../fakeData';
-import { getDatabaseCart } from '../../utilities/databaseManager';
+import { getDatabaseCart, processOrder, removeFromDatabaseCart } from '../../utilities/databaseManager';
+import Cart from '../Cart/Cart';
 import ReviewItem from '../ReviewItem/ReviewItem';
+import happyImage from '../../images/giphy.gif'
+
 
 
 const Review = () => {
     const [cart, setCart] = useState([]);
+    const [orderPlaced, setOrderPlaced] = useState(false)
+
+    const handlePlaceOrder = () => {
+        setCart([]);
+        setOrderPlaced(true)
+        processOrder();
+    }
+    const removeProduct = (productKey) => {
+        const newCart = cart.filter(pd => pd.key !== productKey)
+        setCart(newCart);
+        removeFromDatabaseCart(productKey)
+    }
     useEffect(() => {
         //cart
         const savedCart = getDatabaseCart();
@@ -18,13 +33,27 @@ const Review = () => {
         
         setCart(cartProduct)
     }, [])
-    
+
+    let thankyou;
+    if (orderPlaced) {
+        thankyou = <img src={happyImage} alt="" />
+    }
     return (
-        <div>
-            <h1>Cart Items: {cart.length}</h1>
-            {
-                cart.map(pd => <ReviewItem product ={pd} key = {pd.key}></ReviewItem>)
+        <div className="twin-container">
+           
+        <div className="product-container">
+           {
+                cart.map(pd => <ReviewItem removeProduct={removeProduct} product ={pd} key = {pd.key}></ReviewItem>)
             }
+            {
+                thankyou
+            }
+        </div>
+        <div className="cart-container">
+            <Cart cart={cart}>
+                <button className="main-button" onClick={handlePlaceOrder}>Place Order</button>
+            </Cart>
+        </div>
         </div>
     );
 };
